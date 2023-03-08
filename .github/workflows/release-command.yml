@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Link to this workflow in command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -35,14 +35,14 @@ jobs:
             [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Checkout script
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: BSData/process-release-command
           path: script
           ref: master
 
       - name: Calculate new version, title, description
-        uses: Amadevus/pwsh-script@v1
+        uses: Amadevus/pwsh-script@v2
         id: get_values
         with:
           script: |
@@ -56,7 +56,7 @@ jobs:
             return ./script/ConvertFrom-ReleaseCommand @args
 
       - name: Create a release
-        uses: actions/github-script@v2
+        uses: actions/github-script@v6
         id: create_release
         env:
           RELEASE_INFO: ${{ steps.get_values.outputs.result }}
@@ -66,7 +66,7 @@ jobs:
             const rel = JSON.parse(process.env.RELEASE_INFO)
             const targetCommitish = context.payload.client_payload.slash_command.args.named.target
             const [owner, repo] = context.payload.client_payload.github.payload.repository.full_name.split('/')
-            const { data: release } = await github.repos.createRelease({
+            const { data: release } = await github.rest.repos.createRelease({
               owner,
               repo,
               tag_name: rel.tag,
@@ -79,7 +79,7 @@ jobs:
             core.setOutput('html_url', release.html_url)
 
       - name: Add reaction to command comment on success
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -91,7 +91,7 @@ jobs:
           reactions: hooray
 
       - name: Add reaction to command comment on failure
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         if: failure()
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}

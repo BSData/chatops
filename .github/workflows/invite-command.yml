@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Link to this workflow in command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -19,7 +19,7 @@ jobs:
             [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Create invite
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         id: invite_script
         with:
           github-token: ${{ secrets.BSDATA_BOT_TOKEN }}
@@ -33,7 +33,7 @@ jobs:
               {
                 throw 'Issue must have a "[Join Request]" title';
               }
-              let { data: response, status } = await github.repos.addCollaborator({
+              let { data: response, status } = await github.rest.repos.addCollaborator({
                 owner: ctx.payload.repository.owner.login,
                 repo: ctx.payload.repository.name,
                 username: login,
@@ -58,7 +58,7 @@ jobs:
             }
 
       - name: Add reaction to command comment on success
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -67,7 +67,7 @@ jobs:
           reactions: hooray
 
       - name: Add reaction to command comment on failure
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         if: failure()
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
@@ -77,7 +77,7 @@ jobs:
           reactions: "-1"
 
       - name: Checkout chatops
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Format closing comment
         uses: Amadevus/pwsh-script@v2
@@ -93,7 +93,7 @@ jobs:
             return ($text -f $login, $env:INVITE_URL)
 
       - name: Close issue
-        uses: peter-evans/close-issue@v1
+        uses: peter-evans/close-issue@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}

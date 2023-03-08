@@ -12,7 +12,7 @@ jobs:
       TEMPLATE_REPO: BSData/TemplateDataRepo
     steps:
       - name: Link to this workflow in command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -23,14 +23,14 @@ jobs:
             [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Create/get repo fork
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         id: fork_script
         with:
           github-token: ${{ secrets.BSDATA_BOT_TOKEN }}
           script: |
             let [owner, repo] = context.payload.client_payload.slash_command.args.unnamed.arg1.split('/');
             try {
-              let { data: response, status } = await github.repos.createFork({
+              let { data: response, status } = await github.rest.repos.createFork({
                 owner: owner,
                 repo: repo
               });
@@ -48,13 +48,13 @@ jobs:
             }
 
       - name: Checkout template repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: template
 
       - name: Checkout target repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ fromJSON(steps.fork_script.outputs.result).parent.full_name }}
           path: target
@@ -73,7 +73,7 @@ jobs:
               | Out-Host
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         id: create_pr
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
             Triggered by ${{ github.event.client_payload.github.payload.comment.html_url }}
 
       - name: Add reaction to command comment on success
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -100,7 +100,7 @@ jobs:
           reactions: hooray
 
       - name: Add reaction to command comment on failure
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         if: failure()
         with:
           token: ${{ secrets.BSDATA_BOT_TOKEN }}
