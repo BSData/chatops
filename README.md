@@ -97,8 +97,8 @@ Workflow file: [release-command.yml](.github/workflows/release-command.yml)
 
 ## Invite command
 
-This works on issues titled `Join Request`. When an `admin`-level user comments `/invite`,
-BSData-bot will dutyfully send an invite into the repository to the issue author.
+This works on issues titled `Join Request`. When a repository `maintainer` user starts a comment with `/invite`,
+BSData-bot will dutifully invite the OP (issue author) into the repository as a contributor.
 
 ## Template workflows PR command
 
